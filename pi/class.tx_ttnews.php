@@ -27,6 +27,9 @@
  ***************************************************************/
 
 use TYPO3\CMS\Core\Database\DatabaseConnection;
+use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController;
 
 /**
@@ -152,6 +155,21 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
 
     private $listData;
 
+    /**
+     * @var FileRepository
+     */
+    protected $fileRepository;
+
+    /**
+     * @param DatabaseConnection $databaseConnection
+     * @param TypoScriptFrontendController $frontendController
+     */
+    public function __construct(DatabaseConnection $databaseConnection = null, TypoScriptFrontendController $frontendController = null)
+    {
+        parent::__construct($databaseConnection, $frontendController);
+
+        $this->fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+    }
 
     /**
      * Main news function: calls the init_news() function and decides by the given CODEs which of the
@@ -2085,11 +2103,15 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
                 }
 
                 $catTextLenght += strlen($catTitle);
-                if ($this->config['catImageMode'] == 0 or empty($val['image'])) {
+                if ($this->config['catImageMode'] == 0 or (int)$val['image'] === 0) {
                     $markerArray['###NEWS_CATEGORY_IMAGE###'] = '';
                 } else {
                     $catPicConf = array();
-                    $catPicConf['image.']['file'] = 'uploads/pics/' . $val['image'];
+                    $imgs = $this->fileRepository->findByRelation('tt_news_cat', 'image', $val['catid']);
+                    $img = reset($imgs);
+                    if ($img instanceof FileInterface) {
+                        $catPicConf['image.']['file'] = $img->getPublicUrl();
+                    }
                     $catPicConf['image.']['file.']['maxW'] = intval($this->config['catImageMaxWidth']);
                     $catPicConf['image.']['file.']['maxH'] = intval($this->config['catImageMaxHeight']);
                     $catPicConf['image.']['stdWrap.']['spaceAfter'] = 0;
@@ -2185,15 +2207,12 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
             $imageNum = isset($lConf['imageCount']) ? $lConf['imageCount'] : 1;
             $imageNum = \TYPO3\CMS\Core\Utility\MathUtility::forceIntegerInRange($imageNum, 0, 100);
             $theImgCode = '';
-            $imgs = \TYPO3\CMS\Core\Utility\GeneralUtility::trimExplode(',', $row['image'], 1);
-            $imgsCaptions = explode(chr(10), $row['imagecaption']);
-            $imgsAltTexts = explode(chr(10), $row['imagealttext']);
-            $imgsTitleTexts = explode(chr(10), $row['imagetitletext']);
+            $imgs = $this->fileRepository->findByRelation('tt_news', 'image', $row['uid']);
 
             reset($imgs);
 
             if ($textRenderObj == 'displaySingle') {
-                $markerArray = $this->getSingleViewImages($lConf, $imgs, $imgsCaptions, $imgsAltTexts, $imgsTitleTexts, $imageNum, $markerArray);
+                $markerArray = $this->getSingleViewImages($lConf, $imgs, $imageNum, $markerArray);
             } else {
                 $imageMode = (strpos($textRenderObj, 'LATEST') ? $lConf['latestImageMode'] : $lConf['listImageMode']);
 
@@ -2226,13 +2245,14 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
 
                 $cc = 0;
                 foreach ($imgs as $val) {
+                    /** @var $val FileInterface */
                     if ($cc == $imageNum) {
                         break;
                     }
                     if ($val) {
-                        $lConf['image.']['altText'] = $imgsAltTexts[$cc];
-                        $lConf['image.']['titleText'] = $imgsTitleTexts[$cc];
-                        $lConf['image.']['file'] = 'uploads/pics/' . $val;
+                        $lConf['image.']['altText'] = $val->getProperty('alternative');
+                        $lConf['image.']['titleText'] = $val->getProperty('title');
+                        $lConf['image.']['file'] = $val->getPublicUrl();
 
                         $theImgCode .= $this->local_cObj->IMAGE($lConf['image.']) . $this->local_cObj->stdWrap($imgsCaptions[$cc], $lConf['caption_stdWrap.']);
                     }
@@ -2268,7 +2288,7 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
      * @param $markerArray
      * @return mixed
      */
-    public function getSingleViewImages($lConf, $imgs, $imgsCaptions, $imgsAltTexts, $imgsTitleTexts, $imageNum, $markerArray)
+    public function getSingleViewImages($lConf, $imgs, $imageNum, $markerArray)
     {
         $marker = 'NEWS_IMAGE';
         $sViewSplitLConf = array();
@@ -2278,9 +2298,6 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
         // remove first img from image array in single view if the TSvar firstImageIsPreview is set
         if (($iC > 1 && $this->config['firstImageIsPreview']) || ($iC >= 1 && $this->config['forceFirstImageIsPreview'])) {
             array_shift($imgs);
-            array_shift($imgsCaptions);
-            array_shift($imgsAltTexts);
-            array_shift($imgsTitleTexts);
             $iC--;
         }
 
@@ -2318,6 +2335,7 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
         $cc = 0;
         $theImgCode = '';
         foreach ($imgs as $val) {
+            /** @var $val FileInterface */
             if ($cc == $imageNum) {
                 break;
             }
@@ -2335,9 +2353,9 @@ class tx_ttnews extends \TYPO3\CMS\Frontend\Plugin\AbstractPlugin
                 //                    $imgHtml = $this->local_cObj->IMGTEXT($lConf['image.']);
                 //
                 //                } else {
-                $lConf['image.']['altText'] = $imgsAltTexts[$cc];
-                $lConf['image.']['titleText'] = $imgsTitleTexts[$cc];
-                $lConf['image.']['file'] = 'uploads/pics/' . $val;
+                $lConf['image.']['altText'] = $val->getProperty('alternative');
+                $lConf['image.']['titleText'] = $val->getProperty('title');
+                $lConf['image.']['file'] = $val->getPublicUrl();
 
                 $imgHtml = $this->local_cObj->IMAGE($lConf['image.']) . $this->local_cObj->stdWrap($imgsCaptions[$cc], $lConf['caption_stdWrap.']);
 

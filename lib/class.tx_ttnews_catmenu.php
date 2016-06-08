@@ -24,6 +24,10 @@
 *
 *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Resource\FileInterface;
+use TYPO3\CMS\Core\Resource\FileRepository;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
+
 /**
  * class.tx_ttnews_catmenu.php
  *
@@ -41,7 +45,6 @@ class tx_ttnews_catmenu
     public $titleLen = 60;
     public $treeObj;
     public $mode = false;
-
 
     /**
      * [Describe function...]
@@ -137,6 +140,18 @@ class tx_ttnews_FEtreeview extends tx_ttnews_categorytree
 
     public $TCEforms_itemFormElName='';
     public $TCEforms_nonSelectableItemsArray=array();
+
+    /**
+     * @var FileRepository
+     */
+    protected $fileRepository;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->fileRepository = GeneralUtility::makeInstance(FileRepository::class);
+    }
 
     /**
      * wraps the record titles in the tree with links or not depending on if they are in the TCEforms_nonSelectableItemsArray.
@@ -252,10 +267,16 @@ class tx_ttnews_FEtreeview extends tx_ttnews_categorytree
         if ($this->iconPath && $this->iconName) {
             $icon = '<img'.\TYPO3\CMS\Backend\Utility\IconUtility::skinImg('', $this->iconPath.$this->iconName, 'width="18" height="16"').' alt="" />';
         } else {
+            $catIconMode = 1;
             switch ($catIconMode) {
                 case 1: // icon from cat db-record
-                    if ($row['image']) {
-                        $iconConf['image.']['file'] = 'uploads/pics/'.$row['image'];
+                    if ($row['image'] > 0) {
+                        $imgs = $this->fileRepository->findByRelation('tt_news_cat', 'image', $row['uid']);
+                        $img = reset($imgs);
+
+                        if ($img instanceof FileInterface) {
+                            $iconConf['image.']['file'] = $img->getPublicUrl();
+                        }
                     }
                     break;
                 case 2: // own icons

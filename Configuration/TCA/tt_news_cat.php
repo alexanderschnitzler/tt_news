@@ -126,17 +126,12 @@ return array(
         'image' => array(
             'exclude' => 1,
             'label' => 'LLL:EXT:tt_news/Resources/Private/Language/locallang_tca.xml:tt_news_cat.image',
-            'config' => array(
-                'type' => 'group',
-                'internal_type' => 'file',
-                'allowed' => 'gif,png,jpeg,jpg',
-                'max_size' => 100,
-                'uploadfolder' => 'uploads/pics',
-                'show_thumbs' => 1,
-                'size' => 1,
-                'minitems' => 0,
-                'maxitems' => 1,
-            )
+            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig(
+                'image',
+                [
+                    'maxitems' => 1
+                ]
+            ),
         ),
         'shortcut' => array(
             'exclude' => 1,

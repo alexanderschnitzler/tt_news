@@ -232,18 +232,7 @@ return array(
             'exclude' => 1,
             'l10n_mode' => $l10n_mode_image,
             'label' => 'LLL:EXT:lang/locallang_general.php:LGL.images',
-            'config' => array(
-                'type' => 'group',
-                'internal_type' => 'file',
-                'allowed' => $GLOBALS['TYPO3_CONF_VARS']['GFX']['imagefile_ext'],
-                'max_size' => '10000',
-                'uploadfolder' => 'uploads/pics',
-                'show_thumbs' => '1',
-                'size' => 3,
-                'autoSizeMax' => 15,
-                'maxitems' => '99',
-                'minitems' => '0'
-            )
+            'config' => \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::getFileFieldTCAConfig('image'),
         ),
         'imagecaption' => array(
             'exclude' => 1,
