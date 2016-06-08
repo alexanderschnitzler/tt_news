@@ -30,7 +30,7 @@
  *
  * $Id$
  *
- * @author	Rupert Germann <rupi@gmx.li>
+ * @author    Rupert Germann <rupi@gmx.li>
  */
 
 /**
@@ -38,54 +38,52 @@
  */
 /*  add this to your TS setup:
 
-  		# include the php script
-		includeLibs.newsAmenuUserFunc = EXT:tt_news/res/example_amenuUserFunc.php
-		# call user function
-		plugin.tt_news.newsAmenuUserFunc = user_processAmenu
+        # include the php script
+        includeLibs.newsAmenuUserFunc = EXT:tt_news/res/example_amenuUserFunc.php
+        # call user function
+        plugin.tt_news.newsAmenuUserFunc = user_processAmenu
 
 
 */
 /**
  * Example function for displaying amenu items in yearly periods.
  *
- * @param	array		$amenuItemsArr: html code and data for the amenu items
- * @param	[type]		$conf: ...
- * @return	array		the processed Array
+ * @param    array        $amenuItemsArr: html code and data for the amenu items
+ * @param    [type]        $conf: ...
+ * @return    array        the processed Array
  */
-function user_processAmenu($amenuItemsArr, $conf){
-	$lConf = $conf['parentObj']->conf; // get the config array from parent object
-  	#debug($lConf);
-	#debug ($amenuItemsArr);
-	// initialize template markers
-	$markerArray['###ARCHIVE_YEAR###']='';
+function user_processAmenu($amenuItemsArr, $conf)
+{
+    $lConf = $conf['parentObj']->conf; // get the config array from parent object
+    #debug($lConf);
+    #debug ($amenuItemsArr);
+    // initialize template markers
+    $markerArray['###ARCHIVE_YEAR###']='';
 
-	// template-part for the old template
-	$tmpl = '<tr><td bgcolor="'.$lConf['color3.']['wrap'].'" valign="top" nowrap="nowrap">###ARCHIVE_YEAR###</td></tr>';
+    // template-part for the old template
+    $tmpl = '<tr><td bgcolor="'.$lConf['color3.']['wrap'].'" valign="top" nowrap="nowrap">###ARCHIVE_YEAR###</td></tr>';
 
-	// template-part for the new css based template:
-	// $tmpl = '<div class="news-archive-item">###ARCHIVE_YEAR###</div>';
+    // template-part for the new css based template:
+    // $tmpl = '<div class="news-archive-item">###ARCHIVE_YEAR###</div>';
 
-	$oldyear = 0;
-	$out = array();
-	if ($amenuItemsArr) {
-		foreach ($amenuItemsArr as $item){
-		$year = date('Y',$item['data']['start']); // set year
+    $oldyear = 0;
+    $out = array();
+    if ($amenuItemsArr) {
+        foreach ($amenuItemsArr as $item) {
+            $year = date('Y', $item['data']['start']); // set year
 
-			if ($year != $oldyear) { // if year has changed, add a new item to the array
-			    if ($item['data']['start']<20000) {
-				    $year = 'no date';
-				}
-			    $markerArray['###ARCHIVE_YEAR###'] = $conf['parentObj']->local_cObj->stdWrap($year, $lConf['wrap3.']);
-				$out[]['html'] = $conf['parentObj']->cObj->substituteMarkerArrayCached($tmpl, $markerArray);
+            if ($year != $oldyear) { // if year has changed, add a new item to the array
+                if ($item['data']['start']<20000) {
+                    $year = 'no date';
+                }
+                $markerArray['###ARCHIVE_YEAR###'] = $conf['parentObj']->local_cObj->stdWrap($year, $lConf['wrap3.']);
+                $out[]['html'] = $conf['parentObj']->cObj->substituteMarkerArrayCached($tmpl, $markerArray);
 
-				$oldyear = $year;
- 			}
-			$out[] = $item;
-		}
-	}
-	#debug ($out);
-	return $out;
-
+                $oldyear = $year;
+            }
+            $out[] = $item;
+        }
+    }
+    #debug ($out);
+    return $out;
 }
-
-

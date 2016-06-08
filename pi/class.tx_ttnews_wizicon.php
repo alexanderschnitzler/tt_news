@@ -52,40 +52,40 @@
  *
  * @author Rupert Germann <rupi@gmx.li>
  */
-class tx_ttnews_wizicon {
+class tx_ttnews_wizicon
+{
 
-	/**
-	 * Adds the newloginbox wizard icon
-	 *
-	 * @param	array		Input array with wizard items for plugins
-	 * @return	array		Modified input array, having the item for newloginbox added.
-	 */
-	function proc($wizardItems)	{
-		global $LANG;
+    /**
+     * Adds the newloginbox wizard icon
+     *
+     * @param    array        Input array with wizard items for plugins
+     * @return    array        Modified input array, having the item for newloginbox added.
+     */
+    public function proc($wizardItems)
+    {
+        global $LANG;
 
-		$LL = $this->includeLocalLang();
+        $LL = $this->includeLocalLang();
 
-		$wizardItems['plugins_tx_ttnews_pi'] = array(
-			'icon'=>TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('tt_news').'pi/ce_wiz.gif',
-			'title'=>$LANG->getLLL('pi_title',$LL),
-			'description'=>$LANG->getLLL('pi_plus_wiz_description',$LL),
-			'params'=>'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]=9'
-		);
+        $wizardItems['plugins_tx_ttnews_pi'] = array(
+            'icon'=>TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extRelPath('tt_news').'pi/ce_wiz.gif',
+            'title'=>$LANG->getLLL('pi_title', $LL),
+            'description'=>$LANG->getLLL('pi_plus_wiz_description', $LL),
+            'params'=>'&defVals[tt_content][CType]=list&defVals[tt_content][list_type]=9'
+        );
 
-		return $wizardItems;
-	}
+        return $wizardItems;
+    }
 
-	/**
-	 * Includes the locallang file for the 'tt_news' extension
-	 *
-	 * @return	array		The LOCAL_LANG array
-	 */
-	public function includeLocalLang()    {
-		$llFile = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('tt_news') . 'Resources/Private/Language/locallang.xml';
-		$parser = new \TYPO3\CMS\Core\Localization\Parser\LocallangXmlParser();
-		return $parser->getParsedData($llFile, $GLOBALS['LANG']->lang);
-	}
+    /**
+     * Includes the locallang file for the 'tt_news' extension
+     *
+     * @return    array        The LOCAL_LANG array
+     */
+    public function includeLocalLang()
+    {
+        $llFile = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('tt_news') . 'Resources/Private/Language/locallang.xml';
+        $parser = new \TYPO3\CMS\Core\Localization\Parser\LocallangXmlParser();
+        return $parser->getParsedData($llFile, $GLOBALS['LANG']->lang);
+    }
 }
-
-
-

@@ -30,224 +30,237 @@
  * the right headers for the request type
  *
  * @author  Rupert Germann <rupi@gmx.li>
- * @author	Benjamin Mack <mack@xnos.org>
- * @package	TYPO3
- * @subpackage	core
+ * @author    Benjamin Mack <mack@xnos.org>
+ * @package    TYPO3
+ * @subpackage    core
  */
-class tx_ttnews_typo3ajax {
-	var $ajaxId        = null;
-	var $errorMessage  = null;
-	var $isError       = false;
-	var $content       = array();
-	var $contentFormat = 'plain';
-	var $charset       = 'utf-8';
+class tx_ttnews_typo3ajax
+{
+    public $ajaxId        = null;
+    public $errorMessage  = null;
+    public $isError       = false;
+    public $content       = array();
+    public $contentFormat = 'plain';
+    public $charset       = 'utf-8';
 
-	/**
-	 * sets the charset and the ID for the AJAX call
-	 *
-	 * @param	string		the AJAX id
-	 * @return	void
-	 */
-	function tx_ttnews_typo3ajax($ajaxId) {
-		global $LANG;
+    /**
+     * sets the charset and the ID for the AJAX call
+     *
+     * @param    string        the AJAX id
+     * @return    void
+     */
+    public function tx_ttnews_typo3ajax($ajaxId)
+    {
+        global $LANG;
 
-		if (TYPO3_MODE == 'FE') {
-			if ($GLOBALS['TSFE']->renderCharset) {
-				$this->charset = $GLOBALS['TSFE']->renderCharset;
-			}
-		} else {
-			if($LANG->charSet != $this->charset) {
-				$this->charset = $LANG->charSet;
-			}
-		}
-
-
-		$this->ajaxId = $ajaxId;
-	}
+        if (TYPO3_MODE == 'FE') {
+            if ($GLOBALS['TSFE']->renderCharset) {
+                $this->charset = $GLOBALS['TSFE']->renderCharset;
+            }
+        } else {
+            if ($LANG->charSet != $this->charset) {
+                $this->charset = $LANG->charSet;
+            }
+        }
 
 
-	/**
-	 * returns the ID for the AJAX call
-	 *
-	 * @return	string		the AJAX id
-	 */
-	function getAjaxID() {
-		return $this->ajaxId;
-	}
+        $this->ajaxId = $ajaxId;
+    }
 
 
-	/**
-	 * overwrites the existing content with the first parameter
-	 *
-	 * @param	array		the new content
-	 * @return	mixed		the old content as array; if the new content was not an array, false is returned
-	 */
-	function setContent($content) {
-		$oldcontent = false;
-		if (is_array($content)) {
-			$oldcontent = $this->content;
-			$this->content = $content;
-		}
-		return $oldcontent;
-	}
+    /**
+     * returns the ID for the AJAX call
+     *
+     * @return    string        the AJAX id
+     */
+    public function getAjaxID()
+    {
+        return $this->ajaxId;
+    }
 
 
-	/**
-	 * adds new content
-	 *
-	 * @param	string		the new content key where the content should be added in the content array
-	 * @param	string		the new content to add
-	 * @return	mixed		the old content; if the old content didn't exist before, false is returned
-	 */
-	function addContent($key, $content) {
-		$oldcontent = false;
-		if (array_key_exists($key, $this->content)) {
-			$oldcontent = $this->content[$key];
-		}
-		if (!isset($content) || !strlen($content)) {
-			unset($this->content[$key]);
-		} elseif (!isset($key) || !strlen($key)) {
-			$this->content[] = $content;
-		} else {
-			$this->content[$key] = $content;
-		}
-		return $oldcontent;
-	}
+    /**
+     * overwrites the existing content with the first parameter
+     *
+     * @param    array        the new content
+     * @return    mixed        the old content as array; if the new content was not an array, false is returned
+     */
+    public function setContent($content)
+    {
+        $oldcontent = false;
+        if (is_array($content)) {
+            $oldcontent = $this->content;
+            $this->content = $content;
+        }
+        return $oldcontent;
+    }
 
 
-	/**
-	 * returns the content for the ajax call
-	 *
-	 * @param	[type]		$key: ...
-	 * @return	mixed		the content for a specific key or the whole content
-	 */
-	function getContent($key = '') {
-		return ($key && array_key_exists($key, $this->content) ? $this->content[$key] : $this->content);
-	}
+    /**
+     * adds new content
+     *
+     * @param    string        the new content key where the content should be added in the content array
+     * @param    string        the new content to add
+     * @return    mixed        the old content; if the old content didn't exist before, false is returned
+     */
+    public function addContent($key, $content)
+    {
+        $oldcontent = false;
+        if (array_key_exists($key, $this->content)) {
+            $oldcontent = $this->content[$key];
+        }
+        if (!isset($content) || !strlen($content)) {
+            unset($this->content[$key]);
+        } elseif (!isset($key) || !strlen($key)) {
+            $this->content[] = $content;
+        } else {
+            $this->content[$key] = $content;
+        }
+        return $oldcontent;
+    }
 
 
-	/**
-	 * sets the content format for the ajax call
-	 *
-	 * @param	string		can be one of 'plain' (default), 'xml', 'json', 'jsonbody' or 'jsonhead'
-	 * @return	void
-	 */
-	function setContentFormat($format) {
-		if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray(array('plain', 'xml', 'json', 'jsonhead', 'jsonbody'), $format)) {
-			$this->contentFormat = $format;
-		}
-	}
+    /**
+     * returns the content for the ajax call
+     *
+     * @param    [type]        $key: ...
+     * @return    mixed        the content for a specific key or the whole content
+     */
+    public function getContent($key = '')
+    {
+        return ($key && array_key_exists($key, $this->content) ? $this->content[$key] : $this->content);
+    }
 
 
-	/**
-	 * sets an error message and the error flag
-	 *
-	 * @param	string		the error message
-	 * @return	void
-	 */
-	function setError($errorMsg = '') {
-		$this->errorMessage = $errorMsg;
-		$this->isError = true;
-	}
+    /**
+     * sets the content format for the ajax call
+     *
+     * @param    string        can be one of 'plain' (default), 'xml', 'json', 'jsonbody' or 'jsonhead'
+     * @return    void
+     */
+    public function setContentFormat($format)
+    {
+        if (\TYPO3\CMS\Core\Utility\GeneralUtility::inArray(array('plain', 'xml', 'json', 'jsonhead', 'jsonbody'), $format)) {
+            $this->contentFormat = $format;
+        }
+    }
 
 
-	/**
-	 * checks whether an error occured during the execution or not
-	 *
-	 * @return	boolean		whether this AJAX call had errors
-	 */
-	function isError() {
-		return $this->isError;
-	}
+    /**
+     * sets an error message and the error flag
+     *
+     * @param    string        the error message
+     * @return    void
+     */
+    public function setError($errorMsg = '')
+    {
+        $this->errorMessage = $errorMsg;
+        $this->isError = true;
+    }
 
 
-	/**
-	 * renders the AJAX call based on the $contentFormat variable and exits the request
-	 *
-	 * @return	void
-	 */
-	function render() {
-		if ($this->isError) {
-			$this->renderAsError();
-			exit;
-		}
-		switch ($this->contentFormat) {
-			case 'jsonhead':
-			case 'jsonbody':
-			case 'json':
-				$this->renderAsJSON();
-				break;
-			case 'xml':
-				$this->renderAsXML();
-				break;
-			default:
-				$this->renderAsPlain();
-		}
-		exit;
-	}
+    /**
+     * checks whether an error occured during the execution or not
+     *
+     * @return    boolean        whether this AJAX call had errors
+     */
+    public function isError()
+    {
+        return $this->isError;
+    }
 
 
-	/**
-	 * renders the AJAX call in XML error style to handle with JS
-	 * the "responseXML" of the transport object will be filled with the error message then
-	 *
-	 * @return	void
-	 */
-	function renderAsError() {
-		header('Content-type: text/xml; charset='.$this->charset);
-		header('X-JSON: false');
-		die('<t3err>'.htmlspecialchars($this->errorMessage).'</t3err>');
-	}
+    /**
+     * renders the AJAX call based on the $contentFormat variable and exits the request
+     *
+     * @return    void
+     */
+    public function render()
+    {
+        if ($this->isError) {
+            $this->renderAsError();
+            exit;
+        }
+        switch ($this->contentFormat) {
+            case 'jsonhead':
+            case 'jsonbody':
+            case 'json':
+                $this->renderAsJSON();
+                break;
+            case 'xml':
+                $this->renderAsXML();
+                break;
+            default:
+                $this->renderAsPlain();
+        }
+        exit;
+    }
 
 
-	/**
-	 * renders the AJAX call with text/html headers
-	 * the content will be available in the "responseText" value of the transport object
-	 *
-	 * @return	void
-	 */
-	function renderAsPlain() {
-		header('Content-type: text/html; charset='.$this->charset);
-		header('X-JSON: true');
-		echo implode('', $this->content);
-	}
+    /**
+     * renders the AJAX call in XML error style to handle with JS
+     * the "responseXML" of the transport object will be filled with the error message then
+     *
+     * @return    void
+     */
+    public function renderAsError()
+    {
+        header('Content-type: text/xml; charset='.$this->charset);
+        header('X-JSON: false');
+        die('<t3err>'.htmlspecialchars($this->errorMessage).'</t3err>');
+    }
 
 
-	/**
-	 * renders the AJAX call with text/xml headers
-	 * the content will be available in the "responseXML" value of the transport object
-	 *
-	 * @return	void
-	 */
-	function renderAsXML() {
-		header('Content-type: text/xml; charset='.$this->charset);
-		header('X-JSON: true');
-		echo implode('', $this->content);
-	}
+    /**
+     * renders the AJAX call with text/html headers
+     * the content will be available in the "responseText" value of the transport object
+     *
+     * @return    void
+     */
+    public function renderAsPlain()
+    {
+        header('Content-type: text/html; charset='.$this->charset);
+        header('X-JSON: true');
+        echo implode('', $this->content);
+    }
 
 
-	/**
-	 * renders the AJAX call with JSON evaluated headers
-	 * note that you need to have requestHeaders: {Accept: 'application/json'},
-	 * in your AJAX options of your AJAX request object in JS
-	 *
-	 * the content will be available
-	 *    - in the second parameter of the onSuccess / onComplete callback (except when contentFormat = 'jsonbody')
-	 *    - and in the xhr.responseText as a string (except when contentFormat = 'jsonhead')
-	 *         you can evaluate this in JS with xhr.responseText.evalJSON();
-	 *
-	 * @return	void
-	 */
-	function renderAsJSON() {
-		$content = json_encode($this->content);
+    /**
+     * renders the AJAX call with text/xml headers
+     * the content will be available in the "responseXML" value of the transport object
+     *
+     * @return    void
+     */
+    public function renderAsXML()
+    {
+        header('Content-type: text/xml; charset='.$this->charset);
+        header('X-JSON: true');
+        echo implode('', $this->content);
+    }
 
-		header('Content-type: application/json; charset='.$this->charset);
-		header('X-JSON: '.($this->contentFormat != 'jsonbody' ? $content : true));
 
-			// bring content in xhr.responseText except when in "json head only" mode
-		if ($this->contentFormat != 'jsonhead') {
-			echo $content;
-		}
-	}
+    /**
+     * renders the AJAX call with JSON evaluated headers
+     * note that you need to have requestHeaders: {Accept: 'application/json'},
+     * in your AJAX options of your AJAX request object in JS
+     *
+     * the content will be available
+     *    - in the second parameter of the onSuccess / onComplete callback (except when contentFormat = 'jsonbody')
+     *    - and in the xhr.responseText as a string (except when contentFormat = 'jsonhead')
+     *         you can evaluate this in JS with xhr.responseText.evalJSON();
+     *
+     * @return    void
+     */
+    public function renderAsJSON()
+    {
+        $content = json_encode($this->content);
+
+        header('Content-type: application/json; charset='.$this->charset);
+        header('X-JSON: '.($this->contentFormat != 'jsonbody' ? $content : true));
+
+            // bring content in xhr.responseText except when in "json head only" mode
+        if ($this->contentFormat != 'jsonhead') {
+            echo $content;
+        }
+    }
 }
-

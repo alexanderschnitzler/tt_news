@@ -35,108 +35,103 @@
 /**
  * [ Add description ]
  *
- * @author	Rupert Germann <rupi@gmx.li>
- * @package	TYPO3
+ * @author    Rupert Germann <rupi@gmx.li>
+ * @package    TYPO3
  * @subpackage
  */
-class tx_ttnews_cache {
+class tx_ttnews_cache
+{
 
 
-	var $cachingEngine;
+    public $cachingEngine;
 
-	var $tt_news_cache;
-	var $lifetime = 0;
-	var $ACCESS_TIME = 0;
+    public $tt_news_cache;
+    public $lifetime = 0;
+    public $ACCESS_TIME = 0;
 
-	/**
-	 * [Describe function...]
-	 *
-	 * @return	[type]		...
-	 */
-	function tx_ttnews_cache($cachingEngine) {
+    /**
+     * [Describe function...]
+     *
+     * @return    [type]        ...
+     */
+    public function tx_ttnews_cache($cachingEngine)
+    {
+        $this->cachingEngine = $cachingEngine;
 
-		$this->cachingEngine = $cachingEngine;
+        switch ($this->cachingEngine) {
+            case 'cachingFramework':
+                $this->initCachingFramework();
+            break;
 
-		switch ($this->cachingEngine) {
-			case 'cachingFramework':
-				$this->initCachingFramework();
-			break;
+            case 'memcached':
+                $this->initMemcached();
+            break;
 
-			case 'memcached':
-				$this->initMemcached();
-			break;
+            // default = internal
+        }
+    }
 
-			// default = internal
-		}
-
-
-
-	}
-
-	function initMemcached() {
-		$this->tt_news_cache = new Memcache;
-		$this->tt_news_cache->connect('localhost', 11211);
-	}
+    public function initMemcached()
+    {
+        $this->tt_news_cache = new Memcache;
+        $this->tt_news_cache->connect('localhost', 11211);
+    }
 
 
 
 
-	function initCachingFramework() {
-		try {
-			$GLOBALS['typo3CacheFactory']->create(
-				'tt_news_cache',
-				$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['frontend'],
-				$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['backend'],
-				$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['options']);
-		} catch (\TYPO3\CMS\Core\Cache\Exception\DuplicateIdentifierException $e) {
-			// do nothing, a tt_news_cache cache already exists
-		}
+    public function initCachingFramework()
+    {
+        try {
+            $GLOBALS['typo3CacheFactory']->create(
+                'tt_news_cache',
+                $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['frontend'],
+                $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['backend'],
+                $GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['tt_news_cache']['options']);
+        } catch (\TYPO3\CMS\Core\Cache\Exception\DuplicateIdentifierException $e) {
+            // do nothing, a tt_news_cache cache already exists
+        }
 
-		$this->tt_news_cache = $GLOBALS['typo3CacheManager']->getCache('tt_news_cache');
-
-	}
-
-
-	function set($hash, $content, $ident) {
-		if ($this->cachingEngine=='cachingFramework' ) {
-			$this->tt_news_cache->set($hash, $content, array('ident_' . $ident),$this->lifetime);
-
-		} elseif ( $this->cachingEngine=='memcached') {
-			$this->tt_news_cache->set($hash, $content, false, $this->lifetime);
-
-		} else {
-			$table = 'tt_news_cache';
-			$fields_values = array('identifier' => $hash, 'content' => $content, 'crdate' => $GLOBALS['EXEC_TIME'], 'tags' => $ident, 'lifetime' => $this->lifetime);
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'identifier=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, $table));
-			$GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $fields_values);
-		}
-
-	}
+        $this->tt_news_cache = $GLOBALS['typo3CacheManager']->getCache('tt_news_cache');
+    }
 
 
-	function get($hash) {
-		$cacheEntry = FALSE;
-		if ($this->cachingEngine=='cachingFramework' || $this->cachingEngine=='memcached') {
-			$cacheEntry = $this->tt_news_cache->get($hash);
-		} else {
-			$select_fields = 'content';
-			$from_table = 'tt_news_cache';
-			$where_clause = 'identifier=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, $from_table);
+    public function set($hash, $content, $ident)
+    {
+        if ($this->cachingEngine=='cachingFramework') {
+            $this->tt_news_cache->set($hash, $content, array('ident_' . $ident), $this->lifetime);
+        } elseif ($this->cachingEngine=='memcached') {
+            $this->tt_news_cache->set($hash, $content, false, $this->lifetime);
+        } else {
+            $table = 'tt_news_cache';
+            $fields_values = array('identifier' => $hash, 'content' => $content, 'crdate' => $GLOBALS['EXEC_TIME'], 'tags' => $ident, 'lifetime' => $this->lifetime);
+            $GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'identifier=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, $table));
+            $GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $fields_values);
+        }
+    }
 
-//			if ($period > 0) {
-				$where_clause .= ' AND (crdate+lifetime>' . $this->ACCESS_TIME.' OR lifetime=0)';
-//			}
 
-			$cRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($select_fields, $from_table, $where_clause);
+    public function get($hash)
+    {
+        $cacheEntry = false;
+        if ($this->cachingEngine=='cachingFramework' || $this->cachingEngine=='memcached') {
+            $cacheEntry = $this->tt_news_cache->get($hash);
+        } else {
+            $select_fields = 'content';
+            $from_table = 'tt_news_cache';
+            $where_clause = 'identifier=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($hash, $from_table);
 
-			if (is_array($cRec[0]) && $cRec[0]['content'] != '') {
-				$cacheEntry = $cRec[0]['content'];
-			}
-		}
+//            if ($period > 0) {
+                $where_clause .= ' AND (crdate+lifetime>' . $this->ACCESS_TIME.' OR lifetime=0)';
+//            }
 
-		return $cacheEntry;
+            $cRec = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows($select_fields, $from_table, $where_clause);
 
-	}
+            if (is_array($cRec[0]) && $cRec[0]['content'] != '') {
+                $cacheEntry = $cRec[0]['content'];
+            }
+        }
 
+        return $cacheEntry;
+    }
 }
-

@@ -1,6 +1,6 @@
 <?php
 
-	// DO NOT REMOVE OR CHANGE THESE 3 LINES:
+    // DO NOT REMOVE OR CHANGE THESE 3 LINES:
 $MCONF['name']='web_txttnewsM1';
 $MCONF['access']='user,group';
 $MCONF['script'] = '_DISPATCH';

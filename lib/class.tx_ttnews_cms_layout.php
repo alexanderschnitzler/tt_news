@@ -39,31 +39,31 @@
 /**
  * Hook to display verbose information about pi1 plugin in Web>Page module
  *
- * @author	Dmitry Dulepov <dmitry@typo3.org>
- * @package	TYPO3
- * @subpackage	tx_tt_news
+ * @author    Dmitry Dulepov <dmitry@typo3.org>
+ * @package    TYPO3
+ * @subpackage    tx_tt_news
  */
-class tx_ttnews_cms_layout {
-	/**
+class tx_ttnews_cms_layout
+{
+    /**
  * Returns information about this extension's pi1 plugin
  *
- * @param	array		$params	Parameters to the hook
- * @param	object		$pObj	A reference to calling object
- * @return	string		Information about pi1 plugin
+ * @param    array        $params    Parameters to the hook
+ * @param    object        $pObj    A reference to calling object
+ * @return    string        Information about pi1 plugin
  */
-	function getExtensionSummary($params, &$pObj) {
-		if ($params['row']['list_type'] == 9) {
-			$data = \TYPO3\CMS\Core\Utility\GeneralUtility::xml2array($params['row']['pi_flexform']);
-			if (is_array($data) && $data['data']['sDEF']['lDEF']['what_to_display']['vDEF']) {
-				$result = sprintf($GLOBALS['LANG']->sL('LLL:EXT:tt_news/Resources/Private/Language/locallang.xml:cms_layout.mode'),
-							$data['data']['sDEF']['lDEF']['what_to_display']['vDEF']);
-			}
-			if (!$result) {
-				$result = $GLOBALS['LANG']->sL('LLL:EXT:tt_news/Resources/Private/Language/locallang.xml:cms_layout.not_configured');
-			}
-		}
-		return $result;
-	}
+    public function getExtensionSummary($params, &$pObj)
+    {
+        if ($params['row']['list_type'] == 9) {
+            $data = \TYPO3\CMS\Core\Utility\GeneralUtility::xml2array($params['row']['pi_flexform']);
+            if (is_array($data) && $data['data']['sDEF']['lDEF']['what_to_display']['vDEF']) {
+                $result = sprintf($GLOBALS['LANG']->sL('LLL:EXT:tt_news/Resources/Private/Language/locallang.xml:cms_layout.mode'),
+                            $data['data']['sDEF']['lDEF']['what_to_display']['vDEF']);
+            }
+            if (!$result) {
+                $result = $GLOBALS['LANG']->sL('LLL:EXT:tt_news/Resources/Private/Language/locallang.xml:cms_layout.not_configured');
+            }
+        }
+        return $result;
+    }
 }
-
-

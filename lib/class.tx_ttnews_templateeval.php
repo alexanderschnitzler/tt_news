@@ -47,21 +47,21 @@
 /**
  * Hook class for BE to show nice template name.
  *
- * @author	Dmitry Dulepov
+ * @author    Dmitry Dulepov
  */
-class tx_ttnews_templateeval {
-	/**
+class tx_ttnews_templateeval
+{
+    /**
  * Hook to show proper template name in BE if entry was created using older tt_news version
  *
- * @param	array		$params	Params to the hook
- * @return	string		Evaluated value
+ * @param    array        $params    Params to the hook
+ * @return    string        Evaluated value
  */
-	function deevaluateFieldValue($params) {
-		if (trim($params['value']) != '' && false === strpos($params['value'], '/')) {
-			$params['value'] = 'uploads/tt_news/' . $params['value'];
-		}
-		return $params['value'];
-	}
+    public function deevaluateFieldValue($params)
+    {
+        if (trim($params['value']) != '' && false === strpos($params['value'], '/')) {
+            $params['value'] = 'uploads/tt_news/' . $params['value'];
+        }
+        return $params['value'];
+    }
 }
-
-

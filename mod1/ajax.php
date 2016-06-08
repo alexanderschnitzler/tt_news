@@ -28,8 +28,8 @@
  * AJAX dispatcher
  *
  * @author  Rupert Germann <rupi@gmx.li>
- * @author	Benjamin Mack <mack@xnos.org>
- * @package	TYPO3
+ * @author    Benjamin Mack <mack@xnos.org>
+ * @package    TYPO3
  *
  * $Id$
  *
@@ -42,7 +42,7 @@ require($BACK_PATH.'init.php');
 $GLOBALS['LANG'] = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('language');
 $GLOBALS['LANG']->init($GLOBALS['BE_USER']->uc['lang']);
 
-	// finding the script path from the variable
+    // finding the script path from the variable
 $ajaxID = (string) \TYPO3\CMS\Core\Utility\GeneralUtility::_GP('ajaxID');
 $ajaxScript = $TYPO3_CONF_VARS['BE']['AJAX'][$ajaxID];
 
@@ -55,20 +55,19 @@ $ajaxParams = array();
 
 
 
-	// evaluating the arguments and calling the AJAX method/function
+    // evaluating the arguments and calling the AJAX method/function
 if (empty($ajaxID)) {
-	$ajaxObj->setError('No valid ajaxID parameter given.');
-} else if (empty($ajaxScript)) {
-	$ajaxObj->setError('Registered backend function for ajaxID "'.$ajaxID.'" was not found.');
+    $ajaxObj->setError('No valid ajaxID parameter given.');
+} elseif (empty($ajaxScript)) {
+    $ajaxObj->setError('Registered backend function for ajaxID "'.$ajaxID.'" was not found.');
 } else {
-	$ret = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($ajaxScript, $ajaxParams, $ajaxObj, false, true);
-	if ($ret === false) {
-		$ajaxObj->setError('Registered backend function for ajaxID "'.$ajaxID.'" was not found.');
-	}
+    $ret = \TYPO3\CMS\Core\Utility\GeneralUtility::callUserFunction($ajaxScript, $ajaxParams, $ajaxObj, false, true);
+    if ($ret === false) {
+        $ajaxObj->setError('Registered backend function for ajaxID "'.$ajaxID.'" was not found.');
+    }
 }
 
 
 //print_r($ajaxObj);
 
 $ajaxObj->render();
-
